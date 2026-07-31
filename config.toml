@@ -1,0 +1,217 @@
+[exp]
+device = "cuda:0"
+seed = 42
+inference_dtype = "torch.float16"
+# clip_vit-b_16, clip_resnet50, imagenet, dinov2, sam, mae
+model_name = "clip_vit-b_16"
+# subj in 1,2,3,4,5,6,7,8
+subj = 1
+# roi name，这个roi name是所有皮层的蒙版
+full_roi = "ventral_visual_pathway_roi"
+# model layers
+layers = 12
+
+[autoencoder]
+# original, topk, archetypal
+target_layer = 0
+name = "original"
+tied = "True"
+normalize = "False"
+rate = 16
+dtype = "torch.float32"
+batch_size = 64
+epochs = 3
+lr = 5e-5
+l1_weight = 0.00086
+topk = 512
+
+# below is the path we need in the experiment
+
+[SAEsckpt]
+# sae's check point save path, need <model name, sae_name, model layer, autoencoder rate>
+ckpt = "experiments/output/SAEckpt/{}/{}_sae/layer{}_rate{}.ckpt"
+
+[SAEsEvaluation]
+# 保存ImageNetTest的中间激活的路径，需要模型名称和batch index，其中batch index为0-97
+imagenet_test_token_save_root = "/home/brainai1/VDisk2/BrainAi1/Tokens/ImageNetTest/{}_activations/batch_{}.h5"
+# save the average energy activation on ImageNet test dataset, the activated average value, the activated image id, and each feature's activated count.
+average_energy_activation_save_root = "experiments/output/sae_evaluation/{}/{}_sae/layer{}_rate{}_average_energy_activation.pt"
+activated_average_energy_activation_save_root = "experiments/output/sae_evaluation/{}/{}_sae/layer{}_rate{}_activated_average_energy_activation.pt"
+activated_average_energy_activation_id_save_root = "experiments/output/sae_evaluation/{}/{}_sae/layer{}_rate{}_activated_average_energy_activation_id.pt"
+activated_average_energy_activation_count_save_root = "experiments/output/sae_evaluation/{}/{}_sae/layer{}_rate{}_activated_average_energy_activation_count.pt"
+# 用diffusion模型对激活进行可视化以及选择性分析的图片保存路径，这里需要的是 模型名称，sae名称和rate，第几层，权重id，种子的id
+diffusion_result_save_root = "experiments/output/sae_evaluation/diffusion/{}/{}_sae_rate{}/layer{}/sag{}_cls{}_sae_guide{}_top{}/{}/{}.png"
+# 用diffusion模型对激活进行可视化以及选择性分析的成组的图片保存路径，这里需要的是 模型名称，sae名称和rate，第几层，权重id
+diffusion_group_result_save_root = "experiments/output/sae_evaluation/diffusion_group/{}/{}_sae_rate{}/layer{}/sag{}_cls{}_sae_guide{}_top{}/{}.png"
+
+# 保存对应模型topk的特征id，需要 模型名称，sae名称和rate，第几层以及topk的数量
+sae_topk_feature_id_save_root = "experiments/output/sae_evaluation/topk_id/{}/{}_sae_rate{}/layer{}_top{}.pt"
+# 保存topk特征的最高能量激活图像的编号，在ImageNetTest上进行测试，需要 模型名称，sae名称和rate，第几层，topk的数量，以及最高激活图片数量
+sae_topk_feature_selective_image_index_save_root = "experiments/output/sae_evaluation/topk_selectivity/{}/{}_sae_rate{}/layer{}_top{}_{}image_idx.pt"
+# 保存top激活的heatmap可视化图片，需要保存模型名称，sae名称和rate，第几层，第几高激活以及对应的特征id
+sae_topk_feature_selectivity_heatmap_save_root = "experiments/output/sae_evaluation/heatmap/{}_{}_rate{}/layer{}/top{}_{}.png"
+
+# 使用扩散模型对基于roi选择出的sae特征簇进行可视化，分为层内和跨层两部分
+# inner_cluster_diffusion_result_save_root 是可视化模型层内聚类的情况，需要被试编号，roi名称。模型名称，sae名称，sae rate，第几层，cluster编号，特征id，第几张图
+# inner_cluster_diffusion_group_result_save_root 是可视化模型层内聚类的情况的整合图，需要被试编号，roi名称。模型名称，sae名称，sae rate，第几层，cluster编号，特征id
+# cross_layer_cluster_diffusion_result_save_root 是可视化模型跨层聚类的情况，需要被试编号，roi名称。模型名称，sae名称，sae rate，cluster编号，第几层，特征id，第几张图
+inner_cluster_diffusion_result_save_root = "experiments/output/sae_evaluation/diffusion_for_cluster/inner_cluster/subj{}/{}/{}_{}_rate{}/layer{}/cluster{}/{}/{}.png"
+inner_cluster_diffusion_group_result_save_root = "experiments/output/sae_evaluation/diffusion_for_cluster_group/inner_cluster/subj{}/{}/{}_{}_rate{}/layer{}/cluster{}/{}.png"
+cross_layer_cluster_diffusion_result_save_root = "experiments/output/sae_evaluation/diffusion_for_cluster/cross_layer_cluster/subj{}/{}/{}_{}_rate{}/cluster{}/layer{}_{}/{}.png"
+cross_layer_cluster_diffusion_group_result_save_root = "experiments/output/sae_evaluation/diffusion_for_cluster/cross_layer_cluster/subj{}/{}/{}_{}_rate{}/cluster{}/layer{}_{}.png"
+
+[BrainEncoder]
+# 保存模型对图像的image model_embedding，是模型最后一层的输出，这里的图片顺序是平均之后，按照nsd id进行排序的图片
+individual_image_embedding_save_root = "experiments/activation/model_embedding/{}/subj{}_individual_nsd_image_final_embedding.pt"
+same_image_embedding_save_root = "experiments/activation/model_embedding/{}/subj{}_same_nsd_image_final_embedding.pt"
+# 保存brain encoder模型的权重输出
+ridge_weight_save_root = "experiments/output/BrainEncoder/weight/{}/subj{}_encoder_weight.ckpt"
+# 保存r squere相关的图片路径，需要模型名称，被试数，roi名称 
+rsq_noise_celling_save_root = "experiments/output/rsq_image/{}/subj{}_{}_roi_noise_celling_image.png"
+
+[RSA]
+# 这里需要的是，被试，模型名称，sae名称，rate，用于保存大脑和voxel dictionary的rsa相关信息，以及voxel dictionary的特点
+brain_activation_rsm_save_root = "experiments/output/RSA/subj{}/brain_activaiton_rsm.pt"
+voxel_dictionary_rsm_save_root = "experiments/output/RSA/subj{}/{}/{}_rate{}/voxel_dictionary_rsm.pt"
+voxel_dictionary_save_root = "experiments/output/RSA/subj{}/{}/{}_rate{}/voxel_dictionary.pt"
+brain_voxel_dictionary_rsa_score_save_root = "experiments/output/RSA/subj{}/{}/{}_rate{}/brain_voxel_dictionary_rsa_score.pt"
+
+[similarity]
+# nsd_image_middle_activation_save_root 是记录模型神经元在nsd图片数据上的逐层的激活，需要模型名称和被试编号，保存了全部层的信息，同时这个图片数据是按照被试看到图片的顺序排序的
+# nsd_image_sae_activation_save_root 是记录saes在nsd图片数据上的特征激活值。模型名称，被试编号，sae名称，层数, sae rate
+# brain_sae_similarity_save_root 是记录模型和大脑激活之间的相关性，这里是一个逐层的相关性保存，需要被试编码，模型名称，roi名称，sae名称，模型层，sae rate
+# voxel_dictionary_save_root 是从模型全部层中，选择最相关的几个sae权重，并保存构建好的voxel dictionary，需要模型名称，被试编号，roi名称，sae名称，sae rate，top feature number
+# voxel_top_correlation_save_root 是保存建立voxel dictionary时，体素和特征之间的相关性，需要模型名称，被试编号，roi名称，sae名称，sae rate，top feature number
+# voxel_top_layer_save_root是保存建立voxel dictionary时提取的层数，需要模型名称，被试编号，roi名称，sae名称，sae rate，top feature number
+# voxel_top_id_save_root 是保存建立voxel dictionary时提取的特征的id，需要和top layer一起配套使用，需要模型名称，被试编号，roi名称，sae名称，sae rate，top feature number
+top_feature = 1
+nsd_image_middle_activation_save_root = "experiments/activation/model_embedding/{}/subj{}_nsd_image_middle_activation.pt"
+nsd_image_sae_activation_save_root = "experiments/activation/sae_model_activity/{}/subj{}_{}_layer{}_rate{}_sae_nsd_image_middle_activation.pt"
+brain_sae_similarity_save_root = "experiments/output/brain_sae_similarity/subj{}/{}/{}_{}_sae_layer{}_rate{}_activation_similarity.pt"
+brain_neuron_similarity_save_root = "experiments/output/brain_neuron_similarity/subj{}/{}/{}_layer{}_neuron_activation_similarity.pt"
+voxel_dictionary_save_root = "experiments/output/voxel_dictionary/{}/subj{}/{}_{}_sae_rate{}/top{}_voxel_dictionary.pt"
+voxel_top_correlation_save_root = "experiments/output/voxel_dictionary/{}/subj{}/{}_{}_sae_rate{}/top{}_voxel_top_selection.pt"
+voxel_top_layer_save_root = "experiments/output/voxel_dictionary/{}/subj{}/{}_{}_sae_rate{}/top{}_voxel_top_layer.pt"
+voxel_top_id_save_root = "experiments/output/voxel_dictionary/{}/subj{}/{}_{}_sae_rate{}/top{}_voxel_top_index.pt"
+# 保存对voxel dictionary的特征的heat map可视化,需要保存被试编号，roi名称，模型名称，sae名称和rate，第几层，对应的特征id 
+voxel_dictionary_feature_selectivity_heatmap_save_root = "experiments/output/voxel_dictionary_evaluation/heatmap/subj{}/{}/{}_{}_rate{}/layer{}/{}.png"
+# 可视化基于整个ROI选择出来的特征，需要保存被试编号，roi名称，模型名称，sae名称和rate，第几层，第几高激活以及对应的特征id
+roi_selected_feature_heatmap_save_root = "experiments/output/roi_selected_feature_evaluation/heatmap/subj{}/{}/{}_{}_rate{}/layer{}/top{}_{}.png"
+# 对于ROI选择出来的特征，其特征选择性的独立图片，包括原图和热力图两部分，需要保存被试编号，roi名称，模型名称，sae名称和rate，第几层，第几高激活，对应的特征id，以及对应特征最高激活的前20张图片
+roi_selected_feature_heatmap_independent_save_root = "/home/brainai1/zmmao/VLM-Memory/experiments/output/roi_selected_feature_evaluation/heatmap_independent/subj{}/{}/{}_{}_rate{}/layer{}/top{}_{}/{}.png"
+roi_selected_feature_original_independent_save_root = "/home/brainai1/zmmao/VLM-Memory/experiments/output/roi_selected_feature_evaluation/heatmap_independent/subj{}/{}/{}_{}_rate{}/layer{}/top{}_{}/original_{}.png"
+# 保存放在论文中的图片，需要被试，roi名称，模型名称，sae名称和rate，第几层，第几高激活。
+roi_selected_feature_combined_heatmap_save_root = "experiments/output/roi_selected_feature_evaluation/paper_heatmap/subj{}/{}/{}_{}_rate{}/heatmap/layer{}/top{}.jpg"
+roi_selected_feature_combined_original_save_root = "experiments/output/roi_selected_feature_evaluation/paper_heatmap/subj{}/{}/{}_{}_rate{}/original/layer{}/top{}.jpg"
+# 回路分析的前置，根据roi选择出最相关的几个特征在ImageNet test上的激活值，需要保存被试编号，roi名称，模型名称，sae名称和rate，以及top几的特征。
+roi_selected_feature_activation_save_root = "/home/brainai1/VDisk2/BrainAi1/SAEsActivation/ImageNetTest/subj{}/{}/{}_{}_rate{}_top{}.pt"
+roi_selected_feature_activated_activation_save_root = "/home/brainai1/VDisk2/BrainAi1/SAEsActivatedActivation/ImageNetTest/subj{}/{}/{}_{}_rate{}_top{}.pt"
+# 回路分析的前置，根据roi选择出最相关的几个特征的index，需要保存被试编号，roi名称，模型名称，sae名称和rate以及top几的特征。
+roi_selected_feature_index_save_root = "experiments/output/roi_selected_feature_evaluation/selected_top_feature/subj{}/{}/{}_{}_rate{}/top{}_feature_index.pt"
+
+# 回路分析结果保存在下面几个路径下，主要保存层内，跨层的特征簇和保存的降维图片
+# inner_cluster_save_root是记录层内的聚类，保存时需要被试编号，roi名称，模型名称，sae名称，sae rate，第几层，以及top几的特征聚类
+# cross_layer_cluster_save_root是记录跨层的聚类，保存时需要被试编号，roi名称，模型名称，sae名称，sae rate，top几的特征聚类
+# inner_cluster_image_save_root是记录层内的聚类可视化图像，保存时需要被试编号，roi名称，模型名称，sae名称，sae rate，第几层，以及top几的特征聚类
+# cross_layer_cluster_image_save_root是记录跨层的聚类可视化图像，保存时需要被试编号，roi名称，模型名称，sae名称，sae rate，top几的特征聚类
+inner_cluster_info_save_root = "experiments/output/roi_selected_feature_evaluation/cluster/inner_cluster_info/subj{}/{}/{}_{}_rate{}/layer{}_top{}_inner_cluster_info.pt"
+cross_layer_cluster_info_save_root = "experiments/output/roi_selected_feature_evaluation/cluster/cross_layer_cluster_info/subj{}/{}/{}/{}_rate{}_top{}_cross_cluster_info.pt"
+inner_cluster_image_save_root = "experiments/output/roi_selected_feature_evaluation/cluster/inner_cluster_image/subj{}/{}/{}_{}_rate{}/layer{}_top{}_inner_cluster_image.png"
+cross_layer_cluster_image_save_root = "experiments/output/roi_selected_feature_evaluation/cluster/cross_layer_cluster_image/subj{}/{}/{}/{}_rate{}_top{}_cross_cluster_image.png"
+
+# inner_cluster_feature_heatmap_save_root 将提取出来的层内回路中的特征选择性图进行挑选并按照类进行保存，需要被试编号，roi名称，模型名称，sae名称，sae rate，第几层，第几个类，以及对应的特征名称
+# cross_layer_cluster_feature_heatmap_save_root 将提取出来的跨层回路中的特征选择性图进行挑选并按照类进行保存，需要被试编号，模型名称，sae名称，sae rate, roi名称，第几个类，第几层以及对应的特征名称
+inner_cluster_feature_heatmap_save_root = "experiments/output/roi_selected_feature_evaluation/cluster_image_collection/inner_cluster/subj{}/{}_{}_rate{}/{}/layer{}/cluster{}/{}.png"
+cross_layer_cluster_feature_heatmap_save_root = "experiments/output/roi_selected_feature_evaluation/cluster_image_collection/cross_layer_cluster/subj{}/{}/{}_{}_rate{}/cluster{}/layer{}_{}.png"
+
+# 保存模型在NSD数据集上的独立图片的逐层patch embedding，需要被试号，模型名称
+model_patch_individual_embedding_save_root = "experiments/activation/model_patch_embedding/subj{}/{}_patch_individual_embedding.pt"
+
+
+[dataset]
+floc_label = ["adult", "body", "car", "child", "corridor", "house", "instrument", "limb", "number", "scrambled", "word"]
+floc = "/data/fLoc_090616/stimuli/{}"
+coco = "/data/coco"
+coco_experiment = "/data/coco-experiment-food"
+broden = "/data/broden1_227"
+broden_info = "/data/broden1_227/discription.pt"
+broden_sentence = "/data/broden1_227/pic_sentence.pt"
+imagenet_train_root = "/data/ImageNet/ILSVRC2012_img_train"
+imagenet_val_root = "/data/ImageNet/ILSVRC2012_img_val"
+imagenet_test_root = "/data/ImageNet/ILSVRC2012_img_test_v10102019/test"
+imagenet_caffe = "/data/ImageNet/ImageNet_caffe"
+nsd_coco = "/data/NSD_images/images"
+StimuliDir = "/data/NSD_images/images"
+StimuliInfo = "/data/NSD/nsd_stim_info_merged.pkl"
+PPdataPath = "/data/NSD/nsd/nsddata/ppdata"
+BetaPath = "/data/NSD/nsd/nsddata/nsddata_betas/ppdata/"
+
+[visualize]
+# 这里需要一个描述，描述保存信息的description
+cortex_visualize_save_path = "experiments/output/cortex_visualize/{}_image.png"
+# 可视化saes特征和大脑最高相关性的层数使用的discription，这里需要模型名称，被试编号，roi名称，sae名称，sae rate，top feature number
+top_layer_discription = "{}/subj{}/{}_{}_sae_rate{}/top{}_layer"
+# 可视化saes特征和大脑最高相关性使用的discription，这里需要模型名称，被试编号，roi名称，sae名称，sae rate，top feature number
+top_correlation_discription = "{}/subj{}/{}_{}_sae_rate{}/top{}_correlation"
+
+[NSD]
+# change to your NSD data root
+nsd_root = "/data/NSD/nsd"
+repo = 3
+session_num = 40
+cka_batch_size = 64
+stimuli_info = "nsddata/experiments/nsd/nsd_stim_info_merged.pkl"
+from_coco_split= "True"
+
+general_mask_root = "nsddata/ppdata/subj0{}/func1pt8mm/roi/nsdgeneral.nii.gz"
+roi_mask_root = "nsddata/ppdata/subj0{}/func1pt8mm/roi/{}.nii.gz"
+beta_value_root = "nsddata_betas/ppdata/subj0{}/func1pt8mm/betas_fithrf_GLMdenoise_RR/betas_session{:02d}.nii.gz"
+
+# 保存取出的被试的image的index，取自"subject{}_rep0"，以及每个Image的trail id，取自"subject{}_rep{}"
+image_index_save_root = "experiments/output/NSD/StimuImageIndex/coco_ID_of_subj{}.pt"
+image_trail_save_root = "experiments/output/NSD/StimuImageTrail/image_trail_ID_of_subj{}.pt"
+image_root_save_root = "experiments/output/NSD/StimuImageRoot/image_root_of_subj{}.pt"
+
+individual_image_bool_save_root = "experiments/output/NSD/StimuImageIndex/individual_bool_list_of_subj{}.pt"
+same_image_bool_save_root = "experiments/output/NSD/StimuImageIndex/same_bool_list_of_subj{}.pt"
+
+general_mask_save_root = "experiments/output/NSD/mask/subj{}/cortical_{}_general_mask.pt"
+roi_mask_save_root = "experiments/output/NSD/mask/subj{}/{}_mask.pt"
+nonzero_mask_save_root = "experiments/output/NSD/mask/subj{}/roi_{}_1d_mask.pt"
+
+voxal_zscore_response_save_root = "experiments/output/NSD/voxal_response/subj{}/{}_zscore_response.pt"
+voxal_nonzscore_response_save_root = "experiments/output/NSD/voxal_response/subj{}/{}_nonzscore_response.pt"
+zscore_avg_activation_save_root = "experiments/output/NSD/voxal_response/subj{}/cortical_{}_zscore_average_response.pt"
+zscore_activation_ev_save_root = "experiments/output/NSD/voxal_response/subj{}/cortical_{}_zscore_ev.pt"
+nonzscore_avg_activation_save_root = "experiments/output/NSD/voxal_response/subj{}/cortical_{}_nonzscore_average_response.pt"
+nonzscore_activation_ev_save_root = "experiments/output/NSD/voxal_response/subj{}/cortical_{}_nonzscore_ev.pt"
+pure_response_save_root = "experiments/output/NSD/voxal_response/subj{}/pure_cortical_{}_response.pt"
+image_activation_save_root = "experiments/output/NSD/StimuImageEmbedding/subj{}_{}_training_image_embedding.pt"
+image_same_activation_save_root = "experiments/output/NSD/StimuImageEmbedding/subj{}_{}_valid_image_embedding.pt"
+
+# save the middle activation, for each subj, each model and each layer
+middle_activation_save_root = "experiments/output/NSD/StimuImageHiddenResponses/subj{}/{}_{}_hidden_activation.pt"
+middle_same_activation_save_root = "experiments/output/NSD/StimuImageHiddenResponses/subj{}/{}_{}_valid_hidden_activation.pt"
+
+linear_save_root = "experiments/output/NSD/linear_fitting_weight/subj{}/{}_{}_linear_fitting_weight.pt"
+r2_save_root = "experiments/output/NSD/linear_r2_score/subj{}/{}_{}_r2_score.pt"
+# save the middle linear weight, for each subj, each model, each layer and each roi
+middle_layer_linear_save_root = "experiments/output/NSD/middle_layer_linear_fitting_weight/subj{}/{}_{}_{}_linear_fitting_weight.pt"
+middle_layer_r2_save_root = "experiments/output/NSD/middle_layer_linear_r2_score/subj{}/{}_{}_{}_r2_score.pt"
+
+# save the not mask voxel's original coodinate
+mask_coordinate_save_root = "experiments/output/NSD/roi_voxel_coodinate/subj{}/{}_1d_cortical_original_coodinate.pt"
+unflattened_mask_save_root = "experiments/output/NSD/mask/subj{}/{}_unflattened_mask.pt"
+
+# need the subj id and the target ROI, save the flattened roi mask, use to choose the target roi's weight
+# target ROI in ["FFA", "EBA", "RSC", "VWFA", "FOOD", "hv4", "v3", "v2", "v1"]
+roi_index = "experiments/output/NSD/full_visual_roi_index/subj0{}_{}_index.txt"
+
+# 保存每个trail的image root，同时记录被试回复的正确与否，以及当前的图片是第几次出现，距离上一个测试的trail数，run数，session数
+nsd_exp_info_save_root = "experiments/output/NSD/exp/subj{}_experiment_info.pt"
+
+# 保存被试的ncsnr值
+nsd_ncsnr_save_root = "experiments/output/NSD/ncsnr/subj{}_ncsnr.nii.gz"
+
+# 可视化工具
+visualize_utils_root = "experiments/output/NSD/VisualizeUtils/subj{}"
