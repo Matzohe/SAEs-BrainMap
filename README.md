@@ -1,6 +1,10 @@
 
 # SAEs-BrainMap: Unveiling the Emergence of Specialized Concepts in Deep Models via Brain Alignment
 
+**Paper Link**: https://openreview.net/forum?id=neyeQYrNvo&noteId=RR5TkvuC9b
+
+SAEs weight and Brain-SAEs similarity matrix are available at: https://huggingface.co/BITmatzoh/SAEs-BrainMap
+
 <p align="center">
   <img src="img/fig1.png" alt="SAEs-BrainMap Poster" width="100%">
 </p>
